@@ -1,0 +1,7 @@
+test
+archive
+env
+.vscode
+__pycache__
+*.log
+private

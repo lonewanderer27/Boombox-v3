@@ -1,0 +1,561 @@
+from distutils import command
+import nextcord
+from nextcord import FFmpegPCMAudio, PCMVolumeTransformer
+from nextcord.ext import commands
+import logging
+from youtube_dl import YoutubeDL
+from Tenor import SearchTenor
+import colorama
+from colorama import Fore, Style
+from firebase_boombox import Firebase_Boombox
+import requests
+import urllib
+from activities import *
+import os
+import re
+import json
+import random
+from pprint import pprint
+
+bot_name="boombox_v3"
+
+# SET LOGGING
+logger = logging.getLogger('nextcord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='boombox_v3.log', encoding='utf-8', mode='w')    # dump logs to boombox_v3.log
+handler = logging.StreamHandler()   # display logs in the console as well
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
+
+# INITIALIZE FIREBASE DB!
+data = {}
+fb_db = Firebase_Boombox(logger, colorama, bot_name)
+
+# SET DEFAULT BOT SETTINGS
+NOT_IDEAL_COMMAND_PREFIX = ('@', '#')
+COMMAND_PREFIX = "!"    # Default command prefix
+DESCRIPTION = "A Test Bot utilizing Nextcord.py"
+FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn'}
+
+
+# INITIALIZE TENOR CLASS OBJECT
+search_tenor = SearchTenor()
+
+description="A test bot using nextcord.py"
+intents = nextcord.Intents.default()
+intents.members = True
+activity = random.choice(activities_choices)
+bot = commands.Bot(command_prefix=COMMAND_PREFIX, description=DESCRIPTION, intents=intents, activity=activity)
+
+
+def check_db():
+    global data
+    fb_db_status = fb_db.check_db()
+    logger.info(f"{Fore.YELLOW}Do we have db for {bot_name}? : {str(fb_db_status)}")
+    
+    if fb_db_status == False:
+        logger.info(f"{Fore.GREEN}Creating DB...")
+        success = fb_db.create_db()
+        
+    data = fb_db.check_db()
+
+    if data:
+        logger.info(f"{Fore.GREEN}DB is initialized!{Style.RESET_ALL}")
+    else:
+        logger.error(f"{Fore.RED}DB cannot be initialized, please debug{Style.RESET_ALL}")
+        quit()
+
+
+def sync_db(guild_id):
+    global data
+    logger.info(data)
+    for guild in data:
+        guild_data = data[f"{guild_id}"]
+
+        allowed_setting_in_firebase_db = ['command_prefix', 'guild_name']
+        illegal_settings_in_data = []
+        for setting in guild_data:
+            if setting not in allowed_setting_in_firebase_db:
+                illegal_settings_in_data.append(setting)
+
+    data_to_be_sync = data
+    for illegal_setting in illegal_settings_in_data:
+        data_to_be_sync[guild_id].pop(illegal_setting)
+
+    fb_db.sync_database(data_to_be_sync)
+
+
+def ld():
+    with open('data.json', 'r') as openfile:
+        data = json.load(openfile)
+
+
+
+def sd():
+    with open("data.json", "w") as outfile:
+        json.dump(data, outfile)
+
+
+def is_yt_link(text):
+    if re.match(pattern='http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/(?:watch\?v=|embed\/)|\.be\/)(?P<video_id>[\w\-\_]*)(&(amp;)?‌​[\w\?‌​=]*)?', string=text):
+        return True
+    else:
+        return False
+
+
+def playing_now_embed(title, webpage_url, thumbnail_url):
+    '''Creates an Discord Embed that shows the currently playing song.'''
+    embed=nextcord.Embed(title="Playing Now", color=0x05ff09)
+    embed.set_thumbnail(url=thumbnail_url)
+    embed.add_field(name=title, value=webpage_url, inline=False)
+    return embed
+
+
+def get_playing_now(guild_id):
+    song = data[f"{guild_id}"]['currently_playing']
+    title = song['title']
+    webpage_url = song['webpage_url']
+    thumbnail_url = song['thumbnail_url']
+    
+    logger.info(title, webpage_url, thumbnail_url)
+    return title, webpage_url, thumbnail_url
+
+
+def added_to_queue_embed(title, webpage_url, thumbnail_url):
+    '''Creates an Discord Embed that shows the song has been added to queue.'''
+    embed=nextcord.Embed(title="Added to queue", color=0x05ff09)
+    embed.set_thumbnail(url=thumbnail_url)
+    embed.add_field(name=title, value=webpage_url, inline=False)
+    return embed
+
+
+def play_song(guild_id, bot_voice_client_obj):
+    logger.info(bot_voice_client_obj)
+    # logger.info(data[f"{guild_id}"]['songs'])
+    logger.info(f"{len(data[f'{guild_id}']['songs'])} song(s) left including current one")
+
+    # logger.info(data[f"{guild_id}"]['songs'])
+    if len(data[f"{guild_id}"]['songs']) > 0:
+        channel = data[f"{guild_id}"]['songs'][0]['channel']     # the channel where the user has requested the song
+
+        song = data[f"{guild_id}"]['songs']
+        title = data[f"{guild_id}"]['songs'][0]['title']                     # title of the video
+        webpage_url = data[f"{guild_id}"]['songs'][0]['webpage_url']         # normal youtube url
+        source = data[f"{guild_id}"]['songs'][0]['source']                   # playable by FFMPEG youtube url
+        thumbnail_url = data[f"{guild_id}"]['songs'][0]['thumbnail_url']     # thumbnail url
+
+        bot.loop.create_task(channel.send(embed=playing_now_embed(title, webpage_url, thumbnail_url)))      # send the Now Playing embed to the channel of the user that requested it
+        bot_voice_client_obj.play(FFmpegPCMAudio(source, **FFMPEG_OPTIONS), after=lambda e: play_song(guild_id, bot_voice_client_obj))  # stream the music!
+        
+        data[f"{guild_id}"]['currently_playing'] = {
+            'title': title,
+            'webpage_url': webpage_url,
+            'thumbnail_url': thumbnail_url
+        }
+
+        if len(data[f"{guild_id}"]['songs']) != 0:
+            data[f"{guild_id}"]['songs'].pop(0)  # remove the song from the queue
+
+    else:
+        channel = data[f"{guild_id}"]['last_channel_requested_music']
+        bot.loop.create_task(channel.send(embed=nextcord.Embed(title="Queue", description="No more songs in the queue.")))
+        
+
+def verify_yt_link(link):
+    logger.info(f"verifies if this link works:\n{link}")
+
+
+    try:
+        urllib.request.urlopen(link).getcode()
+    except:
+        logger.info("Link did not worked :/")
+        return False
+    else:
+        logger.info("Link worked!")
+        return True
+
+
+def fetch_gif_from_tenor(search_query, limit):
+    gif_data = search_tenor.fetch_gif_data(search_query, limit)
+    return gif_data
+
+
+@bot.event
+async def on_ready():
+    Fore.GREEN
+    logger.info(f"My name is {bot.user}")
+    logger.info(f"and my ID is {bot.user.id}")
+    logger.info(f"I'm logged in and ready!")
+    Style.RESET_ALL
+
+
+@bot.event
+async def on_message(message):
+    channel = message.channel
+    guild_id = message.guild.id
+    guild_name = message.guild.name
+
+    try:
+        data[f"{guild_id}"]
+        logger.info("success loading data from data")
+    except KeyError:
+        logger.info("guild not existing yet, creating default settings...")
+        data[f"{guild_id}"] = {
+            'guild_name': guild_name,
+            'command_prefix': COMMAND_PREFIX,
+            'songs': [],
+            'last_channel_requested_music': ''
+        }
+        try:
+            sync_db(guild_id)
+        except:
+            pass
+
+    try:
+        command_prefix = data[f"{guild_id}"]['command_prefix']
+    except KeyError:
+        command_prefix = COMMAND_PREFIX
+    # we set dollar sign as the default command prefix if the guild hasn't set their own in the bot.
+
+    message.content = message.content.strip()
+
+    if not message.author.bot:
+        logger.info(message)
+        logger.info(f"{message.author.name}#{message.author.discriminator}: {message.content}")
+        
+
+    if message.content.startswith(f"{command_prefix}Hi"):       # returns "Hi"
+        await channel.send("Hello!")
+
+
+    elif message.content.startswith(f"{command_prefix}Hello"):      # returns "Hello"
+        await channel.send("Hi!")
+
+        
+    elif message.content == f"{command_prefix}help" or message.content == f"{command_prefix}h":
+        commands_help = f'''
+**__Boomboxv3 Guide:__**
+`{command_prefix}h` or `{command_prefix}help` : sends this help message!
+
+
+**Music Commands:**
+`{command_prefix}join` : joins the bot to the voice channel
+`{command_prefix}play <youtube link or search query>` : plays the given youtube link or the given song name
+`{command_prefix}pause` : pauses the current playing song
+`{command_prefix}resume` : resumes the paused song
+`{command_prefix}skip` or `$next` : skips to the next song
+`{command_prefix}playing-now` : shows the currently playing song
+`{command_prefix}queue` : displays the queued songs
+`{command_prefix}disconnect` or `$dc` : disconnects the bot from the voice channel
+
+**Other Commands:**
+`{command_prefix}prefix` : shows the currently set prefix
+`{command_prefix}prefix-change` : changes the prefix (the prefix might be reset in a few hours or days as the bot doesn't have a database yet...)
+`{command_prefix}Hi` : says "Hello"
+`{command_prefix}Hello` : says "Hi"
+`{command_prefix}repeat after me` : says back what the user will say
+
+**Debug Commands:**
+`{command_prefix}guild-info` : returns the server id & name'''
+
+        await channel.send(commands_help)
+
+
+    elif message.content == f"{command_prefix}guild-info":     # returns the server id & name
+        response = f"Guild / Server ID: {guild_id}\nName: {guild_name}"
+        logger.info(response)
+        await channel.send(response)
+
+
+    elif message.content == f"{command_prefix}prefix":     # returns the current prefix
+        response = command_prefix
+        logger.info(response)
+        await channel.send(f"`{response}`")
+
+
+    elif message.content == f"{command_prefix}prefix-change":      # changes the current prefix
+
+
+        def check_prefix(message):
+            if len(message.content) > 5:
+                return (True, "Exceeded character limit, must be under 5.")
+            elif message.content in NOT_IDEAL_COMMAND_PREFIX:
+                return (False, f"Prefix can't be `{message.content}`\nProhibited Discord character...")
+            else:
+                return (True, message.content)
+
+
+        await channel.send("What should be the new prefix? Type below:")
+        new_prefix = await bot.wait_for('message')
+
+        result = check_prefix(new_prefix)
+        if result[0] == False:
+            await channel.send(result[1])
+        else:
+            data[f"{guild_id}"]['command_prefix'] = result[1]
+            sync_db(guild_id)
+            
+            await channel.send(f"`{result[1]}` has been set as command prefix for this server.")
+
+
+    elif message.content == f"{command_prefix}repeat after me" or message.content == f"{command_prefix}simon-says":    # repeats the what the user has said
+        def check_if_not_self(message):
+            if message.author.bot:
+                pass
+            elif message.author:
+                return message.content
+
+        user_who_triggered = message.author
+
+        await channel.send("Send your message and I will repeat it!")
+        
+        got_text = False
+        while got_text == False:
+            response = await bot.wait_for('message', check=check_if_not_self)
+            if response.author == user_who_triggered:
+                got_text = True
+        
+        await channel.send(response.content)
+
+
+    elif message.content.startswith(f"{command_prefix}gif"):
+        search_query = message.content[5:]
+        logger.info(f"gif search query: {search_query}")
+        limit = 20
+        gif_data = fetch_gif_from_tenor(f"Cute "+search_query, limit)
+        image_link = gif_data['results'][random.randint(0, limit-1)]['media'][0]['gif']['url']
+        await channel.send(image_link)
+        logger.info(f"{command_prefix}gif - triggered")
+
+
+    elif message.content == f"{command_prefix}status":
+        pass
+
+
+    elif message.content == f"{command_prefix}status-change":
+        pass
+
+
+    elif message.content == f"{command_prefix}activity":
+        pass
+
+
+    elif message.content == f"{command_prefix}activity-change":
+        pass
+
+
+    elif message.content == f"{command_prefix}color-status":
+        pass
+
+
+    elif message.content == f"{command_prefix}color-status-change":
+        pass
+
+
+    elif message.content == f"{command_prefix}join":
+        user_voice_state = message.author.voice
+        logger.info(f"user_voice_state:\n{user_voice_state}")
+
+        if not message.author.voice:    # the user is not connected to any voice channel
+            await channel.send(f"You are not connected to a voice channel")
+            return
+
+        try:
+            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            # logger.info(bot_voice_client_obj)
+            # logger.info(f"type of bot_voice_client_obj: {bot_voice_client_obj}")
+        except KeyError:    # if it fails, that means the bot is not connected, so we will connect the bot
+            await channel.send(f"Joining {user_voice_state.channel}")
+            data[f"{guild_id}"]['voice_client_object'] = await user_voice_state.channel.connect()    # save the voice client object to guild's database
+            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # get hold of the guild's current voice client object
+            await message.guild.change_voice_state(channel=user_voice_state.channel, self_deaf=True)
+            logger.info(f"bot_voice_state: {bot_voice_client_obj}")
+            return
+
+        if message.author.voice.channel.id != bot_voice_client_obj.channel:   # if the user's voice channel and bot's doesn't match
+
+            if bot_voice_client_obj.is_playing():   # do not move if there is something playing
+                await channel.send(f"Bot is playing something in {bot_voice_client_obj.channel}\nStop all the currently playing songs or move the bot.")
+            else:   # move if nothing is playing
+                await channel.send(f"Moving to {message.author.voice.channel}")
+                await bot_voice_client_obj.move_to(message.author.voice.channel)
+
+        else:
+            await channel.send(f"Bot is already connected!")
+
+
+    elif message.content == f"{command_prefix}pause":
+        try:
+            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+        except KeyError:
+            await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
+            return
+
+        if bot_voice_client_obj.is_playing():
+            bot_voice_client_obj.pause()
+            await channel.send("Paused ⏸")
+        elif bot_voice_client_obj.is_paused():
+            await channel.send("Already paused ⏸")
+        else:
+            await channel.send("Nothing is playing")
+
+
+    elif message.content == f"{command_prefix}stop":
+        try:
+            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+        except KeyError:
+            await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
+            return
+
+        if bot_voice_client_obj.is_playing() or bot_voice_client_obj.is_paused():
+            bot_voice_client_obj.stop()
+            bot_voice_client_obj.pause()
+            await channel.send("Music stopped ⏹️")
+            # TODO Remember to put code here to remove the currently playing music from the queue
+        else:
+            await channel.send("Nothing is playing")
+
+
+    elif message.content == f"{command_prefix}next" or message.content == f"{command_prefix}skip":
+        try:
+            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+        except KeyError:
+            await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
+            return
+
+        if bot_voice_client_obj.is_playing() or bot_voice_client_obj.is_paused():
+            bot_voice_client_obj.stop()
+            await channel.send(f"Skipped ⏭️")
+            # TODO Remember to put code here to remove the currently playing music from the queue
+        else:
+            await channel.send("Nothing is playing")
+
+
+    elif message.content == f"{command_prefix}resume":
+        try:
+            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+        except KeyError:
+            await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
+            return
+
+        if bot_voice_client_obj.is_paused():
+            bot_voice_client_obj.resume()
+            await channel.send("Resumed ▶️")
+        elif bot_voice_client_obj.is_playing():
+            await channel.send("Already playing")
+        else:
+            await channel.send("Nothing is playing")
+
+
+    elif message.content == f"{command_prefix}disconnect" or message.content == f"{command_prefix}dc":  # disconnects the bot from the call
+        try:
+            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            last_voice_channel_bot_connected_from = bot_voice_client_obj.channel    # get the last channel in the guild that the bot last connected to
+        except KeyError:
+            await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
+            return
+
+        await bot_voice_client_obj.disconnect()     # disconnect from the voice channel
+        del data[f"{guild_id}"]['voice_client_object']   # delete the voice client object
+        await channel.send(f"Disconnected from {last_voice_channel_bot_connected_from}")    #notify the user
+
+    
+    elif message.content == f"{command_prefix}playing-now":
+        try:
+            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+        except KeyError:
+            await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
+            return
+
+        if bot_voice_client_obj.is_playing():
+            song = get_playing_now(guild_id)
+            await channel.send(embed=playing_now_embed(song[0], song[1], song[2])) 
+        else:
+            await channel.send("Nothing is playing")        
+
+
+    elif message.content.startswith(f"{command_prefix}play"):   # plays the given youtube link or the query that the user has provided
+        try:
+            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+        except KeyError:
+            await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
+            return
+
+        if message.content == f'{command_prefix}play':
+            if len(data[f"{guild_id}"]['songs']) == 0:
+                await channel.send("Queue is empty")
+            elif bot_voice_client_obj.is_playing():
+                await channel.send("Already playing")
+            else:
+                await channel.send("Nothing is playing")
+        # ?play
+        elif len(message.content) > 5:
+            possible_yt_link = message.content[5:].strip()
+            logger.info(possible_yt_link)
+
+            with YoutubeDL({'format': 'bestaudio', 'noplaylist':'True', 'logger': logger}) as ydl:
+                    try: requests.get(possible_yt_link)
+                    except: info = ydl.extract_info(f"ytsearch:{possible_yt_link}", download=False)['entries'][0]
+                    else: info = ydl.extract_info(possible_yt_link, download=False)
+
+            video, source = (info, info['formats'][0]['url'])
+            # plogger.info(info)
+
+            if not verify_yt_link(source):
+                await channel.send("I apologize, this song cannot be added to queue.\nPlease try again another link or keyword...")
+                return
+
+            data[f"{guild_id}"]['songs'].append({
+                'title': info['title'],
+                'webpage_url': info['webpage_url'],
+                'source': info['formats'][0]['url'],
+                'thumbnail_url': info['thumbnails'][0]['url'],
+                'channel': message.channel,
+            },)
+
+            data[f"{guild_id}"]['last_channel_requested_music'] = message.channel
+
+            if not bot_voice_client_obj.is_playing():
+                play_song(guild_id, bot_voice_client_obj)
+            else:
+                await channel.send(embed=added_to_queue_embed(info['title'], info['webpage_url'], info['thumbnails'][0]['url']))
+
+            # 
+
+
+    elif message.content.startswith(f"{command_prefix}queue"):
+        songs_queued = len(data[f"{guild_id}"]['songs'])
+        logger.info(songs_queued)
+        
+
+        if len(data[f"{guild_id}"]['songs']) == 0:
+            embed=nextcord.Embed(title="Queue", description="Empty")
+            
+            await channel.send(embed=embed)
+
+        if len(data[f"{guild_id}"]['songs']) > 0:
+            if len(data[f"{guild_id}"]['songs']) == 1:
+                queue_description = "1 song left"
+            else:
+                queue_description = f"{len(data[f'{guild_id}']['songs'])} songs left"
+                
+            embed=nextcord.Embed(title="Queue", description=queue_description)
+
+            count = 1
+            for song in data[f"{guild_id}"]['songs'][:3]:
+                embed.add_field(name=f"{count} - {song['title']}", value=song['webpage_url'], inline=False)
+
+                count += 1
+
+            if songs_queued > 4:    # display more songs in queue if the songs amount is more than 4
+                embed.add_field(name="Upcoming:", value=f"{songs_queued - 3} more songs in queue", inline=False)
+            elif songs_queued - 3 == 1:     # display 1 more song left if the songs are greater than 3 (4..5..6..etc...) or equal to 3
+                embed.add_field(name="Upcoming:", value="1 more song in queue", inline=False)
+
+            await channel.send(embed=embed)
+            
+
+check_db()
+bot.run(os.environ['BOOMBOX_V3_TOKEN'])
+
+
