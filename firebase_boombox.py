@@ -1,4 +1,4 @@
-import os
+import os, json
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
@@ -10,24 +10,24 @@ class Firebase_Boombox:
     def __init__(self, logger, colorama, bot_name):
 
         # Fetch the service account key JSON file contents or OS environ variable
-        # try:
-        #     self.cred = credentials.Certificate('boombox-327216-firebase-adminsdk-7y7lw-97e32430ca.json')
-        #     logger.info(f"{colorama.Fore.GREEN}Successfully loaded credentials from JSON file.{colorama.Style.RESET_ALL}")
-        #     logger.info(f"{colorama.Fore.YELLOW}WARN: You shouldn't be using JSON cred file to authenticate.\nIt is recommended to store them as environment variables instead.{colorama.Style.RESET_ALL}")
-        # except ValueError:
-        self.cred = credentials.Certificate({
-            "type": os.environ['type'],
-            "project_id": os.environ['project_id'],
-            "private_key_id": os.environ['private_key_id'],
-            "private_key": os.environ['private_key'],
-            "client_email": os.environ['client_email'],
-            'client_id': os.environ['client_id'],
-            'auth_uri': os.environ['auth_uri'],
-            "token_uri": os.environ['token_uri'],
-            "auth_provider_x509_cert_url": os.environ['auth_provider_x509_cert_url'],
-            "client_x509_cert_url": os.environ["client_x509_cert_url"]
-        })
-        logger.info(f"{colorama.Fore.GREEN}Successfully loaded credentials from environment variables.{colorama.Style.RESET_ALL}")
+        try:
+            self.cred = credentials.Certificate('boombox-327216-firebase-adminsdk-7y7lw-97e32430ca.json')
+            logger.info(f"{colorama.Fore.GREEN}Successfully loaded credentials from JSON file.{colorama.Style.RESET_ALL}")
+            logger.info(f"{colorama.Fore.YELLOW}WARN: You shouldn't be using JSON cred file to authenticate.\nIt is recommended to store them as environment variables instead.{colorama.Style.RESET_ALL}")
+        except FileNotFoundError:
+            self.cred = credentials.Certificate({
+                "type": os.environ['type'],
+                "project_id": os.environ['project_id'],
+                "private_key_id": os.environ['private_key_id'],
+                "private_key": os.environ['private_key'],
+                "client_email": os.environ['client_email'],
+                'client_id': os.environ['client_id'],
+                'auth_uri': os.environ['auth_uri'],
+                "token_uri": os.environ['token_uri'],
+                "auth_provider_x509_cert_url": os.environ['auth_provider_x509_cert_url'],
+                "client_x509_cert_url": os.environ["client_x509_cert_url"]
+            })
+            logger.info(f"{colorama.Fore.GREEN}Successfully loaded credentials from environment variables.{colorama.Style.RESET_ALL}")
 
         try:
             self.firebase_database_url = os.environ['firebase_database_url']
