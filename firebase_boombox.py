@@ -14,7 +14,7 @@ class Firebase_Boombox:
             self.cred = credentials.Certificate('boombox-327216-firebase-adminsdk-7y7lw-97e32430ca.json')
             logger.info(f"{colorama.Fore.GREEN}Successfully loaded credentials from JSON file.{colorama.Style.RESET_ALL}")
             logger.info(f"{colorama.Fore.YELLOW}WARN: You shouldn't be using JSON cred file to authenticate.\nIt is recommended to store them as environment variables instead.{colorama.Style.RESET_ALL}")
-        except:
+        except ValueError:
             self.cred = credentials.Certificate({
                 "type": os.environ.get('type'),
                 "project_id": os.environ.get('project_id'),
