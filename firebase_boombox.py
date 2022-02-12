@@ -16,21 +16,21 @@ class Firebase_Boombox:
             logger.info(f"{colorama.Fore.YELLOW}WARN: You shouldn't be using JSON cred file to authenticate.\nIt is recommended to store them as environment variables instead.{colorama.Style.RESET_ALL}")
         except FileNotFoundError:
             self.cred = credentials.Certificate({
-                "type": os.environ['type'],
-                "project_id": os.environ['project_id'],
-                "private_key_id": os.environ['private_key_id'],
-                "private_key": os.environ['private_key'],
-                "client_email": os.environ['client_email'],
-                'client_id': os.environ['client_id'],
-                'auth_uri': os.environ['auth_uri'],
-                "token_uri": os.environ['token_uri'],
-                "auth_provider_x509_cert_url": os.environ['auth_provider_x509_cert_url'],
+                "type": os.environ["type"],
+                "project_id": os.environ["project_id"],
+                "private_key_id": os.environ["private_key_id"],
+                "private_key": os.environ["private_key"],
+                "client_email": os.environ["client_email"],
+                "client_id": os.environ["client_id"],
+                "auth_uri": os.environ["auth_uri"],
+                "token_uri": os.environ["token_uri"],
+                "auth_provider_x509_cert_url": os.environ["auth_provider_x509_cert_url"],
                 "client_x509_cert_url": os.environ["client_x509_cert_url"]
             })
             logger.info(f"{colorama.Fore.GREEN}Successfully loaded credentials from environment variables.{colorama.Style.RESET_ALL}")
 
         try:
-            self.firebase_database_url = os.environ['firebase_database_url']
+            self.firebase_database_url = os.environ["firebase_database_url"]
         except KeyError:
             logger.warning(f"{colorama.Fore.RED}firebase_database_url not present in environ vars, please add.{colorama.Style.RESET_ALL}")
             quit()
