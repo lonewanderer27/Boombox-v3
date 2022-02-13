@@ -1,4 +1,5 @@
-﻿[Boombox Icon]('https://raw.githubusercontent.com/lonewanderer27/Boombox-v3/master/boombox_icon.png') # Boombox v3
+﻿[Boombox Icon]('https://raw.githubusercontent.com/lonewanderer27/Boombox-v3/master/boombox_icon.png') 
+# Boombox v3
 
 ### Background
 It was August 27 2021 when Groovy was issued a cease and desist order for violating Youtube EULA. My friends and I became worried that we wouldn't be able to play music in Discord anymore. So I set out to build a temporary music bot by watching this [simple bot tutorial by Max Codez](https://www.youtube.com/watch?v=jHZlvRr9KxM&t=131s), that's when Boombox v1 was born.
