@@ -237,20 +237,20 @@ async def on_message(message):
 
 **Music Commands:**
 `{command_prefix}join` : joins the bot to the voice channel
-`{command_prefix}play <youtube link or search query>` : plays the given youtube link or the given song name
+`{command_prefix}play <youtube link or search query>` : plays a youtube link or song name
 `{command_prefix}pause` : pauses the current playing song
 `{command_prefix}resume` : resumes the paused song
-`{command_prefix}skip` or `$next` : skips to the next song
+`{command_prefix}skip` or `{command_prefix}next` : skips to the next song
 `{command_prefix}playing-now` : shows the currently playing song
 `{command_prefix}queue` : displays the queued songs
-`{command_prefix}disconnect` or `$dc` : disconnects the bot from the voice channel
+`{command_prefix}disconnect` or `{command_prefix}dc` : disconnects the bot from the voice channel
 
 **Other Commands:**
 `{command_prefix}prefix` : shows the currently set prefix
 `{command_prefix}prefix-change` : changes the prefix (the prefix might be reset in a few hours or days as the bot doesn't have a database yet...)
 `{command_prefix}Hi` : says "Hello"
 `{command_prefix}Hello` : says "Hi"
-`{command_prefix}repeat after me` : says back what the user will say
+`{command_prefix}simon-says` or `{command_prefix}repeat after me` : says back what the user will say
 
 **Debug Commands:**
 `{command_prefix}guild-info` : returns the server id & name'''
