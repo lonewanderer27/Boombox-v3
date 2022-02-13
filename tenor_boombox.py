@@ -1,6 +1,6 @@
 import requests, json
 
-class SearchTenor:
+class Tenor_Boombox:
 
     def __init__(self):
         self.apikey = "KRW5EO7DDGWE"

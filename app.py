@@ -4,7 +4,7 @@ from nextcord import FFmpegPCMAudio, PCMVolumeTransformer
 from nextcord.ext import commands
 import logging
 from youtube_dl import YoutubeDL
-from Tenor import SearchTenor
+from tenor_boombox import Tenor_Boombox
 import colorama
 from colorama import Fore, Style
 from firebase_boombox import Firebase_Boombox
@@ -39,7 +39,7 @@ logger.addHandler(handler)
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn'}
 
 # INITIALIZE TENOR CLASS OBJECT
-search_tenor = SearchTenor()
+search_tenor = Tenor_Boombox()
 
 # SET NEXTCORD STUFF
 intents = nextcord.Intents.default()
