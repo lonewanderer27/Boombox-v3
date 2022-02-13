@@ -13,24 +13,27 @@ import requests
 import urllib
 from activities import *
 import os
+import sys
 import re
 import json
 import random
 from pprint import pprint
-
-# SET LOGGING
-logger = logging.getLogger('nextcord')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='boombox_v3.log', encoding='utf-8', mode='w')    # dump logs to boombox_v3.log
-handler = logging.StreamHandler()   # display logs in the console as well
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
 
 # SET DEFAULT BOT SETTINGS
 BOT_NAME="boombox_v3"   # used for DB, do not absolutely change or you will lose access to prefixes previously changed by servers using this bot
 DESCRIPTION = "A Test Bot utilizing Nextcord.py"
 NOT_IDEAL_COMMAND_PREFIX = ('@', '#')
 COMMAND_PREFIX = "!"    # Default command prefix
+
+# SET LOGGING
+logger = logging.getLogger('nextcord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename=f'{BOT_NAME}.log', encoding='utf-8', mode='w')    # dump logs to boombox_v3.log
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
+handler = logging.StreamHandler(sys.stdout)   # display logs in the console as well
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 # SET FFMPEG OPTIONS
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn'}
@@ -237,7 +240,7 @@ async def on_message(message):
 
 **Music Commands:**
 `{command_prefix}join` : joins the bot to the voice channel
-`{command_prefix}play <youtube link or search query>` : plays a youtube link or song name
+`{command_prefix}play <youtube link or search query>` : plays a youtube link or video name
 `{command_prefix}pause` : pauses the current playing song
 `{command_prefix}resume` : resumes the paused song
 `{command_prefix}skip` or `{command_prefix}next` : skips to the next song
