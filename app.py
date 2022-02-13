@@ -67,10 +67,9 @@ def check_db():
 
 
 def sync_db(guild_id):
-    global data
     logger.info(data)
     for guild in data:
-        guild_data = data[f"{guild_id}"]
+        guild_data = data[guild_id]
 
         allowed_setting_in_firebase_db = ['command_prefix', 'guild_name']
         illegal_settings_in_data = []
@@ -112,7 +111,7 @@ def playing_now_embed(title, webpage_url, thumbnail_url):
 
 
 def get_playing_now(guild_id):
-    song = data[f"{guild_id}"]['currently_playing']
+    song = data[guild_id]['currently_playing']
     title = song['title']
     webpage_url = song['webpage_url']
     thumbnail_url = song['thumbnail_url']
@@ -131,33 +130,33 @@ def added_to_queue_embed(title, webpage_url, thumbnail_url):
 
 def play_song(guild_id, bot_voice_client_obj):
     logger.info(bot_voice_client_obj)
-    # logger.info(data[f"{guild_id}"]['songs'])
-    logger.info(f"{len(data[f'{guild_id}']['songs'])} song(s) left including current one")
+    # logger.info(data[guild_id]['songs'])
+    logger.info(f"{len(data[guild_id]['songs'])} song(s) left including current one")
 
-    # logger.info(data[f"{guild_id}"]['songs'])
-    if len(data[f"{guild_id}"]['songs']) > 0:
-        channel = data[f"{guild_id}"]['songs'][0]['channel']     # the channel where the user has requested the song
+    # logger.info(data[guild_id]['songs'])
+    if len(data[guild_id]['songs']) > 0:
+        channel = data[guild_id]['songs'][0]['channel']     # the channel where the user has requested the song
 
-        song = data[f"{guild_id}"]['songs']
-        title = data[f"{guild_id}"]['songs'][0]['title']                     # title of the video
-        webpage_url = data[f"{guild_id}"]['songs'][0]['webpage_url']         # normal youtube url
-        source = data[f"{guild_id}"]['songs'][0]['source']                   # playable by FFMPEG youtube url
-        thumbnail_url = data[f"{guild_id}"]['songs'][0]['thumbnail_url']     # thumbnail url
+        song = data[guild_id]['songs']
+        title = data[guild_id]['songs'][0]['title']                     # title of the video
+        webpage_url = data[guild_id]['songs'][0]['webpage_url']         # normal youtube url
+        source = data[guild_id]['songs'][0]['source']                   # playable by FFMPEG youtube url
+        thumbnail_url = data[guild_id]['songs'][0]['thumbnail_url']     # thumbnail url
 
         bot.loop.create_task(channel.send(embed=playing_now_embed(title, webpage_url, thumbnail_url)))      # send the Now Playing embed to the channel of the user that requested it
         bot_voice_client_obj.play(FFmpegPCMAudio(source, **FFMPEG_OPTIONS), after=lambda e: play_song(guild_id, bot_voice_client_obj))  # stream the music!
         
-        data[f"{guild_id}"]['currently_playing'] = {
+        data[guild_id]['currently_playing'] = {
             'title': title,
             'webpage_url': webpage_url,
             'thumbnail_url': thumbnail_url
         }
 
-        if len(data[f"{guild_id}"]['songs']) != 0:
-            data[f"{guild_id}"]['songs'].pop(0)  # remove the song from the queue
+        if len(data[guild_id]['songs']) != 0:
+            data[guild_id]['songs'].pop(0)  # remove the song from the queue
 
     else:
-        channel = data[f"{guild_id}"]['last_channel_requested_music']
+        channel = data[guild_id]['last_channel_requested_music']
         bot.loop.create_task(channel.send(embed=nextcord.Embed(title="Queue", description="No more songs in the queue.")))
         
 
@@ -192,27 +191,24 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     channel = message.channel
-    guild_id = message.guild.id
+    guild_id = str(message.guild.id)
     guild_name = message.guild.name
 
     try:
-        data[f"{guild_id}"]
+        data[guild_id]
         logger.info("success loading data from data")
     except KeyError:
         logger.info("guild not existing yet, creating default settings...")
-        data[f"{guild_id}"] = {
+        data[guild_id] = {
             'guild_name': guild_name,
             'command_prefix': COMMAND_PREFIX,
             'songs': [],
             'last_channel_requested_music': ''
         }
-        try:
-            sync_db(guild_id)
-        except:
-            pass
+        sync_db(guild_id)
 
     try:
-        command_prefix = data[f"{guild_id}"]['command_prefix']
+        command_prefix = data[guild_id]['command_prefix']
     except KeyError:
         command_prefix = COMMAND_PREFIX
     # we set dollar sign as the default command prefix if the guild hasn't set their own in the bot.
@@ -292,7 +288,7 @@ async def on_message(message):
         if result[0] == False:
             await channel.send(result[1])
         else:
-            data[f"{guild_id}"]['command_prefix'] = result[1]
+            data[guild_id]['command_prefix'] = result[1]
             sync_db(guild_id)
             
             await channel.send(f"`{result[1]}` has been set as command prefix for this server.")
@@ -361,13 +357,13 @@ async def on_message(message):
             return
 
         try:
-            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
             # logger.info(bot_voice_client_obj)
             # logger.info(f"type of bot_voice_client_obj: {bot_voice_client_obj}")
         except KeyError:    # if it fails, that means the bot is not connected, so we will connect the bot
             await channel.send(f"Joining {user_voice_state.channel}")
-            data[f"{guild_id}"]['voice_client_object'] = await user_voice_state.channel.connect()    # save the voice client object to guild's database
-            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # get hold of the guild's current voice client object
+            data[guild_id]['voice_client_object'] = await user_voice_state.channel.connect()    # save the voice client object to guild's database
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # get hold of the guild's current voice client object
             await message.guild.change_voice_state(channel=user_voice_state.channel, self_deaf=True)
             logger.info(f"bot_voice_state: {bot_voice_client_obj}")
             return
@@ -386,7 +382,7 @@ async def on_message(message):
 
     elif message.content == f"{command_prefix}pause":
         try:
-            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
         except KeyError:
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
@@ -402,7 +398,7 @@ async def on_message(message):
 
     elif message.content == f"{command_prefix}stop":
         try:
-            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
         except KeyError:
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
@@ -418,7 +414,7 @@ async def on_message(message):
 
     elif message.content == f"{command_prefix}next" or message.content == f"{command_prefix}skip":
         try:
-            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
         except KeyError:
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
@@ -433,7 +429,7 @@ async def on_message(message):
 
     elif message.content == f"{command_prefix}resume":
         try:
-            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
         except KeyError:
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
@@ -449,20 +445,20 @@ async def on_message(message):
 
     elif message.content == f"{command_prefix}disconnect" or message.content == f"{command_prefix}dc":  # disconnects the bot from the call
         try:
-            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
             last_voice_channel_bot_connected_from = bot_voice_client_obj.channel    # get the last channel in the guild that the bot last connected to
         except KeyError:
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
 
         await bot_voice_client_obj.disconnect()     # disconnect from the voice channel
-        del data[f"{guild_id}"]['voice_client_object']   # delete the voice client object
+        del data[guild_id]['voice_client_object']   # delete the voice client object
         await channel.send(f"Disconnected from {last_voice_channel_bot_connected_from}")    #notify the user
 
     
     elif message.content == f"{command_prefix}playing-now":
         try:
-            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
         except KeyError:
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
@@ -476,13 +472,13 @@ async def on_message(message):
 
     elif message.content.startswith(f"{command_prefix}play"):   # plays the given youtube link or the query that the user has provided
         try:
-            bot_voice_client_obj = data[f"{guild_id}"]['voice_client_object']    # try to get hold of the guild's current voice client object.
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
         except KeyError:
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
 
         if message.content == f'{command_prefix}play':
-            if len(data[f"{guild_id}"]['songs']) == 0:
+            if len(data[guild_id]['songs']) == 0:
                 await channel.send("Queue is empty")
             elif bot_voice_client_obj.is_playing():
                 await channel.send("Already playing")
@@ -505,7 +501,12 @@ async def on_message(message):
                 await channel.send("I apologize, this song cannot be added to queue.\nPlease try again another link or keyword...")
                 return
 
-            data[f"{guild_id}"]['songs'].append({
+            try:
+                data[guild_id]['songs']     # check if the songs list is initialized
+            except KeyError:
+                data[guild_id]['songs'] = []    # make the list if it doesn't exist
+
+            data[guild_id]['songs'].append({
                 'title': info['title'],
                 'webpage_url': info['webpage_url'],
                 'source': info['formats'][0]['url'],
@@ -513,7 +514,7 @@ async def on_message(message):
                 'channel': message.channel,
             },)
 
-            data[f"{guild_id}"]['last_channel_requested_music'] = message.channel
+            data[guild_id]['last_channel_requested_music'] = message.channel
 
             if not bot_voice_client_obj.is_playing():
                 play_song(guild_id, bot_voice_client_obj)
@@ -524,25 +525,25 @@ async def on_message(message):
 
 
     elif message.content.startswith(f"{command_prefix}queue"):
-        songs_queued = len(data[f"{guild_id}"]['songs'])
+        songs_queued = len(data[guild_id]['songs'])
         logger.info(songs_queued)
         
 
-        if len(data[f"{guild_id}"]['songs']) == 0:
+        if len(data[guild_id]['songs']) == 0:
             embed=nextcord.Embed(title="Queue", description="Empty")
             
             await channel.send(embed=embed)
 
-        if len(data[f"{guild_id}"]['songs']) > 0:
-            if len(data[f"{guild_id}"]['songs']) == 1:
+        if len(data[guild_id]['songs']) > 0:
+            if len(data[guild_id]['songs']) == 1:
                 queue_description = "1 song left"
             else:
-                queue_description = f"{len(data[f'{guild_id}']['songs'])} songs left"
+                queue_description = f"{len(data[guild_id]['songs'])} songs left"
                 
             embed=nextcord.Embed(title="Queue", description=queue_description)
 
             count = 1
-            for song in data[f"{guild_id}"]['songs'][:3]:
+            for song in data[guild_id]['songs'][:3]:
                 embed.add_field(name=f"{count} - {song['title']}", value=song['webpage_url'], inline=False)
 
                 count += 1
