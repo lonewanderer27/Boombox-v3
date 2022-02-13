@@ -8,6 +8,7 @@ from Tenor import SearchTenor
 import colorama
 from colorama import Fore, Style
 from firebase_boombox import Firebase_Boombox
+from keep_alive import keep_alive.py
 import requests
 import urllib
 from activities import *
@@ -557,6 +558,7 @@ async def on_message(message):
             
 
 check_db()
+keep_alive()
 bot.run(os.environ['BOOMBOX_V3_TOKEN'])
 
 
