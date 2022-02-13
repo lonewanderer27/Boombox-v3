@@ -250,7 +250,7 @@ async def on_message(message):
 
 **Other Commands:**
 `{command_prefix}prefix` : shows the currently set prefix
-`{command_prefix}prefix-change` : changes the prefix (the prefix might be reset in a few hours or days as the bot doesn't have a database yet...)
+`{command_prefix}prefix-change` : changes the prefix
 `{command_prefix}Hi` : says "Hello"
 `{command_prefix}Hello` : says "Hi"
 `{command_prefix}simon-says` or `{command_prefix}repeat after me` : says back what the user will say
