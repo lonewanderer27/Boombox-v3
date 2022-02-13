@@ -11,6 +11,13 @@ But despite that I was able to build a lot of projects using only those 20 days 
 
 And now here we are, after 6 months of learning Python, Boombox v3 is finally alive.
 
+# Features
+- Play a Youtube video by just entering name or a link directly.
+- Pause / Play music
+- Display the currently playing music
+- Queue system
+- Change it's prefix
+
 # Deploy this Bot
 
 You can host Boombox in either Replit or Heroku. 
@@ -27,7 +34,7 @@ Then at last get the Token.
 1. Discord Developer Account & Bot
 2. Replit REPL
 3. Firebase Realtime DB
-4. Patience
+4. Patience 😉
 
 ### Setup Firebase:
 1. Go to [Firebase](https://firebase.google.com/) and register if you don't have an account yet.
@@ -36,13 +43,13 @@ Then at last get the Token.
 4. Enable Service Account and export it to JSON file.
 5. Go to your Realtime Database again and copy the Database link.
 6. Open your downloaded JSON service account and append the following:
-	- Realtime Database link
-	- Your Discord Bot Token
+	- Realtime Database link	*<sub>inside of  `BOOMBOX_V3_TOKEN` key</sub>*
+	- Your Discord Bot Token		*<sub>inside of `firebase_database_url` key</sub>*
 
 ### Setup Replit:
 1. Go to [Replit](https://replit.com/) and register if you don't have an account yet.
 2. Create a new repl by clicking the `+` button at the top right.
-3. Click `Import From GitHub`, copy the link of this GitHub repo to the GitHub url in Replit, then click the button at the bottom right.
+3. Click `Import From GitHub`, copy the link of this repo to the URL textbox, then click the `Import From GitHub` at the bottom right.
 4. Put `python3 app.py` for the repl run command then click enter.
 5. Open the sidebar and then go to Secrets.
 6. Click `Open RAW Editor`, copy all the contents of the service account JSON that you downloaded earlier, then hit save.
