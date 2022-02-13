@@ -45,7 +45,7 @@ Then at last get the Token.
 1. Go to [Firebase](https://firebase.google.com/) and register if you don't have an account yet.
 2. Create a Project and then enable Realtime Database on that. *<sub>Make sure to choose Locked Down mode for security!</sub>*
 3. Go to Project Settings -> Service Accounts.
-4. Enable Service Account and export it to JSON file.
+4. Enable Service Account and then click `Generate new private key`.
 5. Go to your Realtime Database again and copy the Database link.
 6. Open your downloaded JSON service account and append the following:
 	- Realtime Database link	*<sub>inside of `firebase_database_url` key</sub>* 
