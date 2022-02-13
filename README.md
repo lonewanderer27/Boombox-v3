@@ -1,4 +1,4 @@
-﻿[Boombox Icon]('https://raw.githubusercontent.com/lonewanderer27/Boombox-v3/master/boombox_icon.png') 
+﻿![Boombox Icon]('https://raw.githubusercontent.com/lonewanderer27/Boombox-v3/master/boombox_icon.png') 
 # Boombox v3
 
 ### Background
