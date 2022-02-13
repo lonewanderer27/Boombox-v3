@@ -5,3 +5,5 @@ env
 __pycache__
 *.log
 private
+.vercel
+vercel.json
