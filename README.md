@@ -12,11 +12,16 @@ But despite that I was able to build a lot of projects using only those 20 days 
 And now here we are, after 6 months of learning Python, Boombox v3 is finally alive.
 
 # Features
-- Play a Youtube video by just entering name or a link directly.
+- Play a Youtube video or link
 - Pause / Play music
 - Display the currently playing music
 - Queue system
-- Change it's prefix
+- Change it's prefix 
+
+### Planned:
+- [ ] Allow the user to reorder queued music
+- [ ] Play Spotify links
+- [ ] Use slash commands
 
 # Deploy this Bot
 
