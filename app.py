@@ -18,8 +18,6 @@ import json
 import random
 from pprint import pprint
 
-bot_name="boombox_v3"
-
 # SET LOGGING
 logger = logging.getLogger('nextcord')
 logger.setLevel(logging.DEBUG)
@@ -28,35 +26,37 @@ handler = logging.StreamHandler()   # display logs in the console as well
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-# INITIALIZE FIREBASE DB!
-data = {}
-fb_db = Firebase_Boombox(logger, colorama, bot_name)
-
 # SET DEFAULT BOT SETTINGS
+BOT_NAME="boombox_v3"   # used for DB, do not absolutely change or you will lose access to prefixes previously changed by servers using this bot
+DESCRIPTION = "A Test Bot utilizing Nextcord.py"
 NOT_IDEAL_COMMAND_PREFIX = ('@', '#')
 COMMAND_PREFIX = "!"    # Default command prefix
-DESCRIPTION = "A Test Bot utilizing Nextcord.py"
-FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn'}
 
+# SET FFMPEG OPTIONS
+FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn'}
 
 # INITIALIZE TENOR CLASS OBJECT
 search_tenor = SearchTenor()
 
-description="A test bot using nextcord.py"
+# SET NEXTCORD STUFF
 intents = nextcord.Intents.default()
 intents.members = True
 activity = random.choice(activities_choices)
 bot = commands.Bot(command_prefix=COMMAND_PREFIX, description=DESCRIPTION, intents=intents, activity=activity)
 
+# INITIALIZE FIREBASE DB!
+data = {}
+fb_db = Firebase_Boombox(logger, colorama, BOT_NAME)
+
 
 def check_db():
     global data
     fb_db_status = fb_db.check_db()
-    logger.info(f"{Fore.YELLOW}Do we have db for {bot_name}? : {str(fb_db_status)}")
+    logger.info(f"{Fore.YELLOW}Do we have db for {BOT_NAME}? : {str(fb_db_status)}")
     
     if fb_db_status == False:
         logger.info(f"{Fore.GREEN}Creating DB...")
-        success = fb_db.create_db()
+        fb_db.create_db()
         
     data = fb_db.check_db()
 
