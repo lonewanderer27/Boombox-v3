@@ -11,7 +11,7 @@ But despite that I was able to build a lot of projects using only those 20 days 
 
 And now here we are, after 6 months of learning Python, Boombox v3 is finally alive.
 
-# Features
+# Features!
 - Play a Youtube video or link
 - Pause / Play music
 - Display the currently playing music
@@ -23,7 +23,7 @@ And now here we are, after 6 months of learning Python, Boombox v3 is finally al
 - [ ] Play Spotify links
 - [ ] Use slash commands
 
-# Deploy this Bot
+# Deploy the Bot!
 
 You can host Boombox in either Replit or Heroku. 
 Make sure to setup a bot in [Discord Developers](https://discord.com/developers/applications) first, then enable the following options:
@@ -33,7 +33,7 @@ Make sure to setup a bot in [Discord Developers](https://discord.com/developers/
 
 Then at last get the Token.
 
-## REPLIT
+## DEPLOY TO REPLIT
 
 ### What You'll Need:
 1. Discord Developer Account & Bot
@@ -48,8 +48,8 @@ Then at last get the Token.
 4. Enable Service Account and export it to JSON file.
 5. Go to your Realtime Database again and copy the Database link.
 6. Open your downloaded JSON service account and append the following:
-	- Realtime Database link	*<sub>inside of  `BOOMBOX_V3_TOKEN` key</sub>*
-	- Your Discord Bot Token		*<sub>inside of `firebase_database_url` key</sub>*
+	- Realtime Database link	*<sub>inside of `firebase_database_url` key</sub>* 
+	- Your Discord Bot Token		*<sub>inside of  `BOOMBOX_V3_TOKEN` key</sub>*
 
 ### Setup Replit:
 1. Go to [Replit](https://replit.com/) and register if you don't have an account yet.
