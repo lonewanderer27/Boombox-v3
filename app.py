@@ -8,7 +8,7 @@ from Tenor import SearchTenor
 import colorama
 from colorama import Fore, Style
 from firebase_boombox import Firebase_Boombox
-from keep_alive import keep_alive.py
+from keep_alive import keep_alive
 import requests
 import urllib
 from activities import *
