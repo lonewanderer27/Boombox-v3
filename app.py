@@ -10,6 +10,7 @@ import colorama
 from colorama import Fore, Style
 from firebase_boombox import Firebase_Boombox
 from keep_alive import keep_alive
+import asyncio
 import requests
 import urllib
 from activities import *
@@ -45,8 +46,7 @@ search_tenor = Tenor_Boombox()
 # SET NEXTCORD STUFF
 intents = nextcord.Intents.default()
 intents.members = True
-activity = random.choice(activities_choices)
-bot = commands.Bot(command_prefix=COMMAND_PREFIX, description=DESCRIPTION, intents=intents, activity=activity)
+bot = commands.Bot(command_prefix=COMMAND_PREFIX, description=DESCRIPTION, intents=intents)
 
 # INITIALIZE FIREBASE DB!
 data = {}
@@ -184,6 +184,12 @@ def fetch_gif_from_tenor(search_query, limit):
     return gif_data
 
 
+async def change_activity():
+    while True:
+        await bot.change_presence(activity=random.choice(activities_choices))
+        await asyncio.sleep(60)
+
+
 @bot.event
 async def on_ready():
     Fore.GREEN
@@ -191,6 +197,8 @@ async def on_ready():
     logger.info(f"and my ID is {bot.user.id}")
     logger.info(f"I'm logged in and ready!")
     Style.RESET_ALL
+
+    bot.loop.create_task(change_activity())
 
 
 @bot.event
@@ -330,28 +338,28 @@ async def on_message(message):
         logger.info(f"{command_prefix}gif - triggered")
 
 
-    elif message.content == f"{command_prefix}status":
+    elif message.content == f"{command_prefix}presence":
         pass
 
 
-    elif message.content == f"{command_prefix}status-change":
-        pass
+    elif message.content == f"{command_prefix}presence-change":
+        def check_if_not_self(message):
+            if not message.author.bot:
+                return message.content
 
+        user_who_triggered = message.author
 
-    elif message.content == f"{command_prefix}activity":
-        pass
+        await channel.send("What should be the new activity of the bot?")
+        
+        got_text = False
+        while got_text == False:
+            response = await bot.wait_for('message', check=check_if_not_self)
+            if response.author == user_who_triggered:
+                got_text = True
 
-
-    elif message.content == f"{command_prefix}activity-change":
-        pass
-
-
-    elif message.content == f"{command_prefix}color-status":
-        pass
-
-
-    elif message.content == f"{command_prefix}color-status-change":
-        pass
+        activity = nextcord.CustomActivity(name=response.content)
+        await bot.change_presence(status=nextcord.Status.online, activity=activity)
+        await channel.send(f"{BOT_NAME.title()} has been changed to {response.content}")
 
 
     elif message.content == f"{command_prefix}join":

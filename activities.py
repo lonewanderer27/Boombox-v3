@@ -19,5 +19,6 @@ taylor_swift_albums = [
 
 activities_choices = [
     nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{COMMAND_PREFIX}help"),
-    nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{random.choice(taylor_swift_albums)}")
+    nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{random.choice(taylor_swift_albums)}"),
+    nextcord.Streaming(platform="Youtube", name="Polaroid Love", url="https://www.youtube.com/watch?v=vRdZVDWs3BI")
 ]
