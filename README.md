@@ -17,6 +17,7 @@ And now here we are, after 6 months of learning Python, Boombox v3 is finally al
 - Pause / Play music
 - Display the currently playing music
 - Queue system
+- Move the bot to a channel
 - Change it's prefix 
 
 ### Planned:
