@@ -13,7 +13,6 @@ from keep_alive import keep_alive
 import asyncio
 import requests
 import urllib
-from activities import *
 import os
 import sys
 import re
@@ -185,6 +184,27 @@ def fetch_gif_from_tenor(search_query, limit):
 
 
 async def change_activity():
+    taylor_swift_albums = [
+    'Taylor Swift',
+    'Speak Now',
+    '1989',
+    'reputation',
+    'Lover',
+    'Folklore',
+    'Evermore',
+    "Fearless (Taylor's Version)",
+    "Red (Taylor's Version)",
+    ]
+
+    amount_of_servers = f'on {format(len(bot.guilds))} servers.'
+
+    activities_choices = [
+        nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{COMMAND_PREFIX}help"),
+        nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{random.choice(taylor_swift_albums)}"),
+        nextcord.Streaming(platform="Youtube", name="Polaroid Love", url="https://www.youtube.com/watch?v=vRdZVDWs3BI"),
+        nextcord.Activity(type=nextcord.ActivityType.listening, name=amount_of_servers)
+    ]
+
     while True:
         await bot.change_presence(activity=random.choice(activities_choices))
         await asyncio.sleep(60)
