@@ -1,3 +1,4 @@
+from ast import excepthandler
 from distutils import command
 import nextcord
 from nextcord import FFmpegPCMAudio, PCMVolumeTransformer
@@ -402,8 +403,7 @@ async def on_message(message):
                 await channel.send("Nothing is playing")
 
         else:
-            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} the music")
-
+            await channel.send(f"Join {bot_voice_client_obj.channel.mention} first so you can {message.content[1:]} the music")
 
 
     elif message.content == f"{command_prefix}stop":
@@ -424,7 +424,7 @@ async def on_message(message):
                 await channel.send("Nothing is playing")
 
         else:
-            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} the music")
+            await channel.send(f"Join {bot_voice_client_obj.channel.mention} first so you can {message.content[1:]} the music")
 
 
     elif message.content == f"{command_prefix}next" or message.content == f"{command_prefix}skip":
@@ -444,7 +444,7 @@ async def on_message(message):
                 await channel.send("Nothing is playing")
         
         else:
-            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} the music")
+            await channel.send(f"Join {bot_voice_client_obj.channel.mention} first so you can {message.content[1:]} the music")
 
 
     elif message.content == f"{command_prefix}resume":
@@ -465,7 +465,7 @@ async def on_message(message):
                 await channel.send("Nothing is playing")
 
         else:
-            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} the music")
+            await channel.send(f"Join {bot_voice_client_obj.channel.mention} first so you can {message.content[1:]} the music")
 
 
     elif message.content == f"{command_prefix}disconnect" or message.content == f"{command_prefix}dc":  # disconnects the bot from the call
@@ -483,7 +483,7 @@ async def on_message(message):
             await channel.send(f"Disconnected from {last_voice_channel_bot_connected_from}")    #notify the user
 
         else:
-            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} {BOT_NAME.title()}")
+            await channel.send(f"Join {bot_voice_client_obj.channel.mention} first so you can {message.content[1:]} the music")
 
     
     elif message.content == f"{command_prefix}playing-now":
@@ -497,7 +497,27 @@ async def on_message(message):
             song = get_playing_now(guild_id)
             await channel.send(embed=playing_now_embed(song[0], song[1], song[2])) 
         else:
-            await channel.send("Nothing is playing")        
+            await channel.send("Nothing is playing")
+
+    
+    elif message.content.startswith(f"{command_prefix}move"):
+        try:
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
+        except KeyError:
+            await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
+            return
+
+        potential_voice_channel_id = int(message.content[5:].strip())
+        logger.info(f"User {message.author.name} has told us to move to {potential_voice_channel_id}")
+
+        channel_obj = message.guild.get_channel(potential_voice_channel_id)
+        logger.info(channel_obj)
+
+        if channel_obj:
+            await bot_voice_client_obj.move_to(channel_obj)
+            await channel.send(f"Moved to {bot_voice_client_obj.channel.mention}")
+        else:
+            await channel.send(f"Invalid Channel ID")
 
 
     elif message.content.startswith(f"{command_prefix}play"):   # plays the given youtube link or the query that the user has provided
@@ -551,8 +571,6 @@ async def on_message(message):
             else:
                 await channel.send(embed=added_to_queue_embed(info['title'], info['webpage_url'], info['thumbnails'][0]['url']))
 
-            # 
-
 
     elif message.content.startswith(f"{command_prefix}queue"):
         songs_queued = len(data[guild_id]['songs'])
@@ -561,7 +579,6 @@ async def on_message(message):
 
         if len(data[guild_id]['songs']) == 0:
             embed=nextcord.Embed(title="Queue", description="Empty")
-            
             await channel.send(embed=embed)
 
         if len(data[guild_id]['songs']) > 0:
