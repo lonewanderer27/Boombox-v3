@@ -201,8 +201,13 @@ async def change_activity():
     activities_choices = [
         nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{COMMAND_PREFIX}help"),
         nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{random.choice(taylor_swift_albums)}"),
-        nextcord.Streaming(platform="Youtube", name="Polaroid Love", url="https://www.youtube.com/watch?v=vRdZVDWs3BI"),
+        nextcord.Streaming(platform="Youtube", name="ENHYPEN - Polaroid Love", url="https://www.youtube.com/watch?v=vRdZVDWs3BI"),
+        nextcord.Streaming(platform="Youtube", name="Ben&Ben - Sa Susunod Na Habang Buhay", link="https://www.youtube.com/watch?v=yB2J6kXxJIY"),
+        nextcord.Streaming(platform="Youtube", name="Ben&Ben - Maybe The Night", link="https://www.youtube.com/watch?v=hJhVURhdLEg"),
+        nextcord.Streaming(platform="Youtube", name="Ben&Ben - Araw - Araw", link="https://www.youtube.com/watch?v=XVhEm62Uqog"),
+        nextcord.Streaming(platform="Youtube", name="Earl - Araw - Araw", link="https://www.youtube.com/watch?v=ND0mP8ftmQE"),
         nextcord.Activity(type=nextcord.ActivityType.listening, name=amount_of_servers)
+
     ]
 
     while True:
