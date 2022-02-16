@@ -367,9 +367,9 @@ async def on_message(message):
             # logger.info(bot_voice_client_obj)
             # logger.info(f"type of bot_voice_client_obj: {bot_voice_client_obj}")
         except KeyError:    # if it fails, that means the bot is not connected, so we will connect the bot
-            data[guild_id]['voice_client_object'] = await user_voice_state.channel.connect()    # save the voice client object to guild's database
-            bot_voice_client_obj = data[guild_id]['voice_client_object']    # get hold of the guild's current voice client object
-            await message.guild.change_voice_state(channel=user_voice_state.channel, self_deaf=True)
+            data[guild_id]['voice_client_object'] = await user_voice_state.channel.connect()            # save the voice client object to guild's database
+            bot_voice_client_obj = data[guild_id]['voice_client_object']                                # get hold of the guild's current voice client object
+            await message.guild.change_voice_state(channel=user_voice_state.channel, self_deaf=True)    #mute the bot to reduce data usage
             logger.info(f"bot_voice_state: {bot_voice_client_obj}")
             await channel.send(f"Joined {user_voice_state.channel.mention}")
             return
@@ -510,6 +510,7 @@ async def on_message(message):
         if len(message.content) < 6:
             if message.author.voice:
                 await bot_voice_client_obj.move_to(message.author.voice.channel)
+                await bot_voice_client_obj.guild.change_voice_state(self_deaf=True)
                 await channel.send(f"Moved to {message.author.voice.channel.mention}")
             else:
                 await channel.send("You are connected to a voice channel.")
@@ -535,6 +536,7 @@ async def on_message(message):
         logger.info(f"User {message.author.name} has told us to move to {channel_obj.name}")
         
         await bot_voice_client_obj.move_to(channel_obj)
+        await bot_voice_client_obj.guild.change_voice_state(self_deaf=True)
         await channel.send(f"Moved to {channel_obj.mention}")
 
 
