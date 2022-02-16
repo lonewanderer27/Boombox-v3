@@ -510,8 +510,9 @@ async def on_message(message):
         if len(message.content) < 6:
             if message.author.voice:
                 await bot_voice_client_obj.move_to(message.author.voice.channel)
-                await bot_voice_client_obj.guild.change_voice_state(self_deaf=True)
                 await channel.send(f"Moved to {message.author.voice.channel.mention}")
+                await bot_voice_client_obj.guild.change_voice_state(self_deaf=True)
+                
             else:
                 await channel.send("You are connected to a voice channel.")
             return
@@ -536,8 +537,9 @@ async def on_message(message):
         logger.info(f"User {message.author.name} has told us to move to {channel_obj.name}")
         
         await bot_voice_client_obj.move_to(channel_obj)
-        await bot_voice_client_obj.guild.change_voice_state(self_deaf=True)
         await channel.send(f"Moved to {channel_obj.mention}")
+        await bot_voice_client_obj.guild.change_voice_state(self_deaf=True)
+        
 
 
     elif message.content.startswith(f"{command_prefix}play"):   # plays the given youtube link or the query that the user has provided
