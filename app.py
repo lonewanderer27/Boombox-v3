@@ -206,13 +206,14 @@ async def change_activity():
         nextcord.Streaming(platform="Youtube", name="Ben&Ben - Maybe The Night", link="https://www.youtube.com/watch?v=hJhVURhdLEg"),
         nextcord.Streaming(platform="Youtube", name="Ben&Ben - Araw - Araw", link="https://www.youtube.com/watch?v=XVhEm62Uqog"),
         nextcord.Streaming(platform="Youtube", name="Earl - Araw - Araw", link="https://www.youtube.com/watch?v=ND0mP8ftmQE"),
+        nextcord.Streaming(platform="Youtube", name="Ben&Ben - Leaves feat. Young K", link="https://www.youtube.com/watch?v=5oxxi0d7AQI"),
         nextcord.Activity(type=nextcord.ActivityType.listening, name=amount_of_servers)
 
     ]
 
     while True:
         await bot.change_presence(activity=random.choice(activities_choices))
-        await asyncio.sleep(60)
+        await asyncio.sleep(300)
 
 
 @bot.event
