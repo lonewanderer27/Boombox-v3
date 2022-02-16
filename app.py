@@ -365,19 +365,19 @@ async def on_message(message):
             # logger.info(bot_voice_client_obj)
             # logger.info(f"type of bot_voice_client_obj: {bot_voice_client_obj}")
         except KeyError:    # if it fails, that means the bot is not connected, so we will connect the bot
-            await channel.send(f"Joining {user_voice_state.channel}")
+            await channel.send(f"Joining {user_voice_state.channel.mention}")
             data[guild_id]['voice_client_object'] = await user_voice_state.channel.connect()    # save the voice client object to guild's database
             bot_voice_client_obj = data[guild_id]['voice_client_object']    # get hold of the guild's current voice client object
             await message.guild.change_voice_state(channel=user_voice_state.channel, self_deaf=True)
             logger.info(f"bot_voice_state: {bot_voice_client_obj}")
             return
 
-        if message.author.voice.channel.id != bot_voice_client_obj.channel:   # if the user's voice channel and bot's doesn't match
+        if message.author.voice.channel.id != bot_voice_client_obj.channel.id:   # if the user's voice channel and bot's doesn't match
 
             if bot_voice_client_obj.is_playing():   # do not move if there is something playing
-                await channel.send(f"Bot is playing something in {bot_voice_client_obj.channel}\nStop all the currently playing songs or move the bot.")
+                await channel.send(f"Bot is playing something in {bot_voice_client_obj.channel.mention}\nStop all the currently playing songs or move the bot.")
             else:   # move if nothing is playing
-                await channel.send(f"Moving to {message.author.voice.channel}")
+                await channel.send(f"Moving to {message.author.voice.channel.mention}")
                 await bot_voice_client_obj.move_to(message.author.voice.channel)
 
         else:
@@ -391,13 +391,19 @@ async def on_message(message):
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
 
-        if bot_voice_client_obj.is_playing():
-            bot_voice_client_obj.pause()
-            await channel.send("Paused ⏸")
-        elif bot_voice_client_obj.is_paused():
-            await channel.send("Already paused ⏸")
+        if message.author.voice.channel.id == bot_voice_client_obj.channel.id:
+
+            if bot_voice_client_obj.is_playing():
+                bot_voice_client_obj.pause()
+                await channel.send("Paused ⏸")
+            elif bot_voice_client_obj.is_paused():
+                await channel.send("Already paused ⏸")
+            else:
+                await channel.send("Nothing is playing")
+
         else:
-            await channel.send("Nothing is playing")
+            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} the music")
+
 
 
     elif message.content == f"{command_prefix}stop":
@@ -407,13 +413,18 @@ async def on_message(message):
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
 
-        if bot_voice_client_obj.is_playing() or bot_voice_client_obj.is_paused():
-            bot_voice_client_obj.stop()
-            bot_voice_client_obj.pause()
-            await channel.send("Music stopped ⏹️")
-            # TODO Remember to put code here to remove the currently playing music from the queue
+        if message.author.voice.channel.id == bot_voice_client_obj.channel.id:
+
+            if bot_voice_client_obj.is_playing() or bot_voice_client_obj.is_paused():
+                bot_voice_client_obj.stop()
+                bot_voice_client_obj.pause()
+                await channel.send("Music stopped ⏹️")
+                # TODO Remember to put code here to remove the currently playing music from the queue
+            else:
+                await channel.send("Nothing is playing")
+
         else:
-            await channel.send("Nothing is playing")
+            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} the music")
 
 
     elif message.content == f"{command_prefix}next" or message.content == f"{command_prefix}skip":
@@ -423,12 +434,17 @@ async def on_message(message):
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
 
-        if bot_voice_client_obj.is_playing() or bot_voice_client_obj.is_paused():
-            bot_voice_client_obj.stop()
-            await channel.send(f"Skipped ⏭️")
-            # TODO Remember to put code here to remove the currently playing music from the queue
+        if message.author.voice.channel.id == bot_voice_client_obj.channel.id:
+            
+            if bot_voice_client_obj.is_playing() or bot_voice_client_obj.is_paused():
+                bot_voice_client_obj.stop()
+                await channel.send(f"Skipped ⏭️")
+                # TODO Remember to put code here to remove the currently playing music from the queue
+            else:
+                await channel.send("Nothing is playing")
+        
         else:
-            await channel.send("Nothing is playing")
+            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} the music")
 
 
     elif message.content == f"{command_prefix}resume":
@@ -437,14 +453,19 @@ async def on_message(message):
         except KeyError:
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
+        
+        if message.author.voice.channel.id == bot_voice_client_obj.channel.id:
 
-        if bot_voice_client_obj.is_paused():
-            bot_voice_client_obj.resume()
-            await channel.send("Resumed ▶️")
-        elif bot_voice_client_obj.is_playing():
-            await channel.send("Already playing")
+            if bot_voice_client_obj.is_paused():
+                bot_voice_client_obj.resume()
+                await channel.send("Resumed ▶️")
+            elif bot_voice_client_obj.is_playing():
+                await channel.send("Already playing")
+            else:
+                await channel.send("Nothing is playing")
+
         else:
-            await channel.send("Nothing is playing")
+            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} the music")
 
 
     elif message.content == f"{command_prefix}disconnect" or message.content == f"{command_prefix}dc":  # disconnects the bot from the call
@@ -455,9 +476,14 @@ async def on_message(message):
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
 
-        await bot_voice_client_obj.disconnect()     # disconnect from the voice channel
-        del data[guild_id]['voice_client_object']   # delete the voice client object
-        await channel.send(f"Disconnected from {last_voice_channel_bot_connected_from}")    #notify the user
+        if message.author.voice.channel.id == bot_voice_client_obj.channel.id:
+
+            await bot_voice_client_obj.disconnect()     # disconnect from the voice channel
+            del data[guild_id]['voice_client_object']   # delete the voice client object
+            await channel.send(f"Disconnected from {last_voice_channel_bot_connected_from}")    #notify the user
+
+        else:
+            await channel.send(f"You are not connected to {bot_voice_client_obj.channel.mention} so you can't {message.content[1:]} {BOT_NAME.title()}")
 
     
     elif message.content == f"{command_prefix}playing-now":
