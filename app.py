@@ -196,7 +196,7 @@ async def change_activity():
     "Red (Taylor's Version)",
     ]
 
-    amount_of_servers = f'{format(len(bot.guilds))} servers.'
+    amount_of_servers = f'{format(len(bot.guilds))} servers'
 
     activities_choices = [
         nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{COMMAND_PREFIX}help"),
