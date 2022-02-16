@@ -247,7 +247,7 @@ async def on_message(message):
 `{command_prefix}skip` or `{command_prefix}next` : skips to the next song
 `{command_prefix}playing-now` : shows the currently playing song
 `{command_prefix}queue` : displays the queued songs
-`{command_prefix}move <Channel ID or Name>` : moves the bot to a channel,\nif parameter is empty it will move to the user's current voice channel
+`{command_prefix}move <Channel ID or Name>` : moves the bot to another voice channel, if parameter is empty it will move to the user's current voice channel
 `{command_prefix}disconnect` or `{command_prefix}dc` : disconnects the bot from the voice channel
 
 **Other Commands:**
