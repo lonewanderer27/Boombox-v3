@@ -183,7 +183,7 @@ def fetch_gif_from_tenor(search_query, limit):
     return gif_data
 
 
-async def change_activity():
+async def change_activity(loop=True):
     taylor_swift_albums = [
     'Taylor Swift',
     'Speak Now',
@@ -201,19 +201,21 @@ async def change_activity():
     activities_choices = [
         nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{COMMAND_PREFIX}help"),
         nextcord.Activity(type=nextcord.ActivityType.listening, name=f"{random.choice(taylor_swift_albums)}"),
-        nextcord.Streaming(platform="Youtube", name="ENHYPEN - Polaroid Love", url="https://www.youtube.com/watch?v=vRdZVDWs3BI"),
-        nextcord.Streaming(platform="Youtube", name="Ben&Ben - Sa Susunod Na Habang Buhay", link="https://www.youtube.com/watch?v=yB2J6kXxJIY"),
-        nextcord.Streaming(platform="Youtube", name="Ben&Ben - Maybe The Night", link="https://www.youtube.com/watch?v=hJhVURhdLEg"),
-        nextcord.Streaming(platform="Youtube", name="Ben&Ben - Araw - Araw", link="https://www.youtube.com/watch?v=XVhEm62Uqog"),
-        nextcord.Streaming(platform="Youtube", name="Earl - Araw - Araw", link="https://www.youtube.com/watch?v=ND0mP8ftmQE"),
-        nextcord.Streaming(platform="Youtube", name="Ben&Ben - Leaves feat. Young K", link="https://www.youtube.com/watch?v=5oxxi0d7AQI"),
+        nextcord.Streaming(platform="Youtube", name="Polaroid Love", url="https://www.youtube.com/watch?v=vRdZVDWs3BI"),
+        nextcord.Streaming(platform="Youtube", name="Sa Susunod Na Habang Buhay", url="https://www.youtube.com/watch?v=yB2J6kXxJIY"),
+        nextcord.Streaming(platform="Youtube", name="Maybe The Night", url="https://www.youtube.com/watch?v=hJhVURhdLEg"),
+        nextcord.Streaming(platform="Youtube", name="Araw - Araw", url="https://www.youtube.com/watch?v=XVhEm62Uqog"),
+        nextcord.Streaming(platform="Youtube", name="Earl: Maybe The Night", url="https://www.youtube.com/watch?v=ND0mP8ftmQE"),
+        nextcord.Streaming(platform="Youtube", name="Leaves feat. Young K", url="https://www.youtube.com/watch?v=5oxxi0d7AQI"),
         nextcord.Activity(type=nextcord.ActivityType.listening, name=amount_of_servers)
-
     ]
 
-    while True:
+    if loop:
+        while True:
+            await bot.change_presence(activity=random.choice(activities_choices))
+            await asyncio.sleep(300)
+    else:
         await bot.change_presence(activity=random.choice(activities_choices))
-        await asyncio.sleep(300)
 
 
 @bot.event
@@ -224,7 +226,7 @@ async def on_ready():
     logger.info(f"I'm logged in and ready!")
     Style.RESET_ALL
 
-    bot.loop.create_task(change_activity())
+    bot.loop.create_task(change_activity(loop=True))
 
 
 @bot.event
@@ -364,8 +366,8 @@ async def on_message(message):
         logger.info(f"{command_prefix}gif - triggered")
 
 
-    elif message.content == f"{command_prefix}presence":
-        pass
+    elif message.content == f"{command_prefix}presence-change-random":
+        await change_activity()
 
 
     elif message.content == f"{command_prefix}presence-change":
