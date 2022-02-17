@@ -16,6 +16,7 @@ And now here we are, after 6 months of learning Python, Boombox v3 is finally al
 - Play a Youtube video or link
 - Pause / Play music
 - Display the currently playing music
+- Display lyrics
 - Queue system
 - Move the bot to a channel
 - Change it's prefix 
