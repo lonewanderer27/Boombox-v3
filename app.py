@@ -10,6 +10,7 @@ import colorama
 from colorama import Fore, Style
 from firebase_boombox import Firebase_Boombox
 from keep_alive import keep_alive
+from lyrics_extractor import SongLyrics
 import asyncio
 import requests
 import urllib
@@ -104,6 +105,18 @@ def is_yt_link(text):
         return True
     else:
         return False
+
+
+def get_song_lyrics(title):
+    extract_lyrics = SongLyrics(os.environ['BOOMBOX_PROGRAMMABLE_SEARCH_ENGINE_KEY'], os.environ['BOOMBOX_PROGRAMMABLE_SEARCH_ENGINE_ID'])
+    song_data = extract_lyrics.get_lyrics(title)
+    return song_data
+
+
+def song_lyrics_embed(title, lyrics):
+    '''Creates an Discord Embed that shows the lyrics of the currently playing song.'''
+    embed=nextcord.Embed(title=title, description=lyrics, color=0x05ff09)
+    return embed
 
 
 def playing_now_embed(title, webpage_url, thumbnail_url):
@@ -575,7 +588,6 @@ async def on_message(message):
         await bot_voice_client_obj.move_to(channel_obj)
         await channel.send(f"Moved to {channel_obj.mention}")
         await bot_voice_client_obj.guild.change_voice_state(self_deaf=True)
-        
 
 
     elif message.content.startswith(f"{command_prefix}play"):   # plays the given youtube link or the query that the user has provided
@@ -659,6 +671,26 @@ async def on_message(message):
                 embed.add_field(name="Upcoming:", value="1 more song in queue", inline=False)
 
             await channel.send(embed=embed)
+
+    elif message.content.startswith(f"{command_prefix}lyrics"):
+        if len(message.content) > 7:
+            song_name = message.content[7:].strip()
+            song_data = get_song_lyrics(song_name)
+            await channel.send(embed=song_lyrics_embed(title=song_data['title'], lyrics=song_data['lyrics']))
+            return
+
+        try:
+            bot_voice_client_obj = data[guild_id]['voice_client_object']    # try to get hold of the guild's current voice client object.
+        except KeyError:
+            await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
+            return
+
+        if bot_voice_client_obj.is_playing():
+            title, webpage_url, thumbnail_url = get_playing_now(guild_id)
+            song_data = get_song_lyrics(title)
+            await channel.send(embed=song_lyrics_embed(title, song_data['lyrics']))
+        else:
+            await channel.send("Nothing is playing")
             
 
 check_db()
