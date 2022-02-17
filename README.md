@@ -26,6 +26,7 @@ And now here we are, after 6 months of learning Python, Boombox v3 is finally al
 - [ ] Play Spotify links
 - [ ] Play playlist links
 - [ ] Use slash commands
+- [ ] Split the commands to their own cog
 
 # Deploy the Bot!
 
