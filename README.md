@@ -24,6 +24,7 @@ And now here we are, after 6 months of learning Python, Boombox v3 is finally al
 ### Planned:
 - [ ] Allow the user to reorder queued music
 - [ ] Play Spotify links
+- [ ] Play playlist links
 - [ ] Use slash commands
 
 # Deploy the Bot!
