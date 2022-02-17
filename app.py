@@ -24,7 +24,7 @@ from pprint import pprint
 # SET DEFAULT BOT SETTINGS
 BOT_NAME="boombox_v3"   # used for DB, do not absolutely change or you will lose access to prefixes previously changed by servers using this bot
 DESCRIPTION = "A Test Bot utilizing Nextcord.py"
-NOT_IDEAL_COMMAND_PREFIX = ('@', '#')
+NOT_IDEAL_COMMAND_PREFIX = ('@', '#', '/')
 COMMAND_PREFIX = "!"    # Default command prefix
 
 # SET LOGGING
@@ -330,7 +330,7 @@ async def on_message(message):
 
         def check_prefix(message):
             if len(message.content) > 1:
-                return (True, "Exceeded character limit, must be only 1!")
+                return (False, "Exceeded character limit, must be only 1!")
             elif message.content in NOT_IDEAL_COMMAND_PREFIX:
                 return (False, f"Prefix can't be `{message.content}`\nProhibited Discord character...")
             else:
