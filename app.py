@@ -673,8 +673,9 @@ async def on_message(message):
 
             await channel.send(embed=embed)
 
+
     elif message.content.startswith(f"{command_prefix}lyrics"):
-        if len(message.content) > 7:
+        if len(message.content) > 7:    # if the user appended a song title at the end of lyrics command, we get the lyrics of that instead
             song_name = message.content[7:].strip()
             song_data = get_song_lyrics(song_name)
             await channel.send(embed=song_lyrics_embed(title=song_data['title'], lyrics=song_data['lyrics']))
@@ -686,8 +687,10 @@ async def on_message(message):
             await channel.send(f"Bot is not connected...")  # if it fails, that means the bot is not connected.
             return
 
+        # if the user only entered the lyrics command, then get the lyrics of the currently playing music
+
         if bot_voice_client_obj.is_playing():
-            title, webpage_url, thumbnail_url = get_playing_now(guild_id)
+            title, webpage_url, thumbnail_url = get_playing_now(guild_id)   # this may look weird, but get_playing_now func returns a tuple 
             song_data = get_song_lyrics(title)
             await channel.send(embed=song_lyrics_embed(title, song_data['lyrics']))
         else:
