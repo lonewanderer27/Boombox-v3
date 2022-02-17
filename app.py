@@ -290,13 +290,14 @@ async def on_message(message):
 
 **Music Commands:**
 `{command_prefix}join` : joins the bot to the voice channel
-`{command_prefix}play <youtube link or search query>` : plays a youtube link or video name
+`{command_prefix}play <Youtube link or Song Title>` : plays a youtube link or video name
 `{command_prefix}pause` : pauses the current playing song
 `{command_prefix}resume` : resumes the paused song
 `{command_prefix}skip` or `{command_prefix}next` : skips to the next song
 `{command_prefix}playing-now` : shows the currently playing song
-`{command_prefix}queue` : displays the queued songs
+`{command_prefix}lyrics <Title>` : shows the lyrics for a song, if parameter is empty it will display the lyrics of the currently playing song
 `{command_prefix}move <Channel ID or Name>` : moves the bot to another voice channel, if parameter is empty it will move to the user's current voice channel
+`{command_prefix}queue` : displays the queued songs
 `{command_prefix}disconnect` or `{command_prefix}dc` : disconnects the bot from the voice channel
 
 **Other Commands:**
