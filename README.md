@@ -4,7 +4,7 @@
 ### Background
 It was August 27 2021 when Groovy was issued a cease and desist order for violating Youtube EULA. My friends and I became worried that we wouldn't be able to play music in Discord anymore. So I set out to build a temporary music bot by watching this [simple bot tutorial by Max Codez](https://www.youtube.com/watch?v=jHZlvRr9KxM&t=131s), that's when Boombox v1 was born.
 
-Fast forward of 2 weeks, I followed [freeCodeCamp's JS Bot Tutorial](https://www.freecodecamp.org/news/create-a-discord-bot-with-javascript-nodejs/), I was able to add queue functionality and to show what's currently playing and this is Boombox v2. However I was still discontented as this version is written in Javascript, which I am totally alien of at that time... meaning I am not able to expand the Boombox functionalities if I wanted to.
+Fast forward of 2 weeks, I followed [freeCodeCamp's JS Bot Tutorial](https://www.freecodecamp.org/news/create-a-discord-bot-with-javascript-nodejs/), I was able to add queue functionality and to show what's currently playing, hence Boombox v2 was born. However I was still discontented as this version is written in Javascript, which I am totally alien of at that time... meaning I am not able to expand the Boombox functionalities if I wanted to.
 
 So I decided that in the following months, I will learn Python till the point that I'm able to make the version 3 of Boombox. I followed [Dr. Angela Yu's 100 Days of Code course](https://www.udemy.com/course/100-days-of-code/) and... *<sub>ps. I wasn't able to complete the 100 Days, I only got to 20th Day 😂</sub>* 
 
